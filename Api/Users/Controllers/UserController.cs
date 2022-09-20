@@ -1,9 +1,11 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TWJobs.Api.Users.Dtos;
 using TWJobs.Api.Users.Services;
 
 namespace TWJobs.Api.Users.Controllers;
 
+[Authorize(Roles = "Admin")]
 [ApiController]
 [Route("api/users")]
 public class UserController : ControllerBase
