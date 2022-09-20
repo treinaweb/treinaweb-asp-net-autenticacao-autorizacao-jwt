@@ -31,11 +31,30 @@ public class ExceptionHandlerMiddleware
         }
         catch (ValidationException e)
         {
-            await handleValidationException(context, e);
+            await handleValidationExceptionAsync(context, e);
+        }
+        catch (BadCredentialsException e)
+        {
+            await handleBadCredentialsExceptionAsync(context, e);
         }
     }
 
-    private Task handleValidationException(HttpContext context, ValidationException e)
+    private Task handleBadCredentialsExceptionAsync(HttpContext context, BadCredentialsException e)
+    {
+        var body = new ErrorResponse
+        {
+            Status = 401,
+            Error = "Unauthorized",
+            Cause = e.GetType().Name,
+            Message = e.Message,
+            Timestamp = DateTime.Now
+        };
+        context.Response.StatusCode = body.Status;
+        context.Response.ContentType = "application/json";
+        return context.Response.WriteAsync(JsonSerializer.Serialize(body, _jsonSerializerOptions));
+    }
+
+    private Task handleValidationExceptionAsync(HttpContext context, ValidationException e)
     {
         var body = new ValidationErrorResponse
         {
