@@ -13,6 +13,9 @@ namespace TWJobs.Api.Auth.Services;
 
 public class AuthService : IAuthService
 {
+    private readonly string _jwtSigningKey;
+    private readonly int _jwtExpirationInMinutes;
+
     private readonly IAuthMapper _authMapper;
     private readonly UserManager<IdentityUser> _userManager;
     private readonly RoleManager<IdentityRole> _roleManager;
@@ -24,13 +27,17 @@ public class AuthService : IAuthService
         UserManager<IdentityUser> userManager,
         RoleManager<IdentityRole> roleManager,
         IValidator<LoginRequest> loginValidator,
-        IValidator<RegisterRequest> registerValidator)
+        IValidator<RegisterRequest> registerValidator,
+        IConfiguration configuration)
     {
         _authMapper = authMapper;
         _userManager = userManager;
         _roleManager = roleManager;
         _loginValidator = loginValidator;
         _registerValidator = registerValidator;
+
+        _jwtSigningKey = configuration.GetValue<string>("Jwt:SigningKey");
+        _jwtExpirationInMinutes = configuration.GetValue<int>("Jwt:ExpirationInMinutes");
     }
 
     public async Task<LoginResponse> Login(LoginRequest request)
@@ -46,7 +53,7 @@ public class AuthService : IAuthService
         {
             throw new BadCredentialsException();
         }
-        var key = Encoding.ASCII.GetBytes("super secret key");
+        var key = Encoding.ASCII.GetBytes(_jwtSigningKey);
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             SigningCredentials = new SigningCredentials(
@@ -54,7 +61,7 @@ public class AuthService : IAuthService
                 SecurityAlgorithms.HmacSha256Signature
             ),
             IssuedAt = DateTime.UtcNow,
-            Expires = DateTime.UtcNow.AddHours(1),
+            Expires = DateTime.UtcNow.AddSeconds(_jwtExpirationInMinutes),
             Subject = new ClaimsIdentity(new[]
             {
                 new Claim(ClaimTypes.Name, user.UserName)

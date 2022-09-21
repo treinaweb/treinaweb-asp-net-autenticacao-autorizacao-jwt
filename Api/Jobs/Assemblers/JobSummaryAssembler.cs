@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using TWJobs.Api.Common.Assemblers;
 using TWJobs.Api.Common.Dtos;
 using TWJobs.Api.Jobs.Dtos;
@@ -30,7 +31,11 @@ public class JobSummaryAssembler : IAssembler<JobSummaryResponse>
             "DELETE",
             "delete"
         );
-        resource.AddLinks(selfLink, updateLink, deleteLink);
+
+        var role = context.User.FindFirst(ClaimTypes.Role)?.Value ?? "";
+
+        resource.AddLink(selfLink);
+        resource.AddLinksIf(role == "Admin", updateLink, deleteLink);
         return resource;
     }
 }

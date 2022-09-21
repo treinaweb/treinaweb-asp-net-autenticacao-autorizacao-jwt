@@ -8,8 +8,10 @@ namespace TWJobs.Core.Config;
 
 public static class IdentityConfig
 {
-    public static IServiceCollection RegisterIdentity(this IServiceCollection services)
+    public static IServiceCollection RegisterIdentity(this IServiceCollection services, IConfiguration configuration)
     {
+        var signingKey = configuration.GetValue<string>("Jwt:SigningKey");
+
         services.AddIdentity<IdentityUser, IdentityRole>(options =>
         {
             options.Password.RequireDigit = false;
@@ -35,7 +37,8 @@ public static class IdentityConfig
                     ValidateAudience = false,
                     ValidateLifetime = true,
                     ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes("super secret key"))
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(signingKey)),
+                    ClockSkew = TimeSpan.Zero,
                 };
             });
         services.AddAuthorization();

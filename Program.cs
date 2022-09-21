@@ -8,7 +8,7 @@ builder.Services.RegisterServices();
 builder.Services.RegisterMappers();
 builder.Services.RegisterValidators();
 builder.Services.RegisterAssemblers();
-builder.Services.RegisterIdentity();
+builder.Services.RegisterIdentity(builder.Configuration);
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
